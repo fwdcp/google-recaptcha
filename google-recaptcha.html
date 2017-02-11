@@ -1,0 +1,57 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<script src="../mixwith/mixwith.js"></script>
+
+<link rel="import" href="../iron-behavior-mixins/iron-resizable-behavior.html">
+
+<dom-module id="google-recaptcha">
+    <template>
+
+    </template>
+</dom-module>
+
+<script>
+    class GoogleReCAPTCHA extends Mix(Polymer.Element).with(IronBehaviors.IronResizableBehavior) {
+        static get is() {
+            return 'google-recaptcha';
+        }
+        static get config() {
+            return {
+                properties: {
+                    lang: String,
+                    sitekey: String,
+                    theme: {
+                        type: String,
+                        value: 'light'
+                    },
+                    type: {
+                        type: String,
+                        value: 'image'
+                    },
+                    size: {
+                        type: String,
+                        value: 'normal'
+                    },
+                    tabindex: {
+                        type: Number,
+                        value: 0
+                    },
+                    invisible: {
+                        type: Boolean,
+                        value: false
+                    },
+                    badge: {
+                        type: String,
+                        value: 'bottomright'
+                    }
+                }
+            };
+        }
+
+        constructor() {
+            super();
+        }
+    }
+
+    customElements.define(GoogleReCAPTCHA.is, GoogleReCAPTCHA);
+</script>

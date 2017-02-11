@@ -1,0 +1,23 @@
+{
+  "name": "google-recaptcha",
+  "homepage": "https://github.com/fwdcp/google-recaptcha",
+  "authors": [
+    "Forward Command Post (http://fwdcp.net)"
+  ],
+  "description": "a Polymer 2.0 element for Google ReCAPTCHA",
+  "main": "google-recaptcha.html",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#2.0-preview",
+    "iron-behavior-mixins": "fwdcp/iron-behavior-mixins",
+    "mixwith": "fwdcp/mixwith"
+  }
+}
