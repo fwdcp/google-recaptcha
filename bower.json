@@ -4,7 +4,7 @@
   "authors": [
     "Forward Command Post (http://fwdcp.net)"
   ],
-  "description": "a Polymer 2.0 element for Google ReCAPTCHA",
+  "description": "a Polymer 2.0 element for Google reCAPTCHA",
   "main": "google-recaptcha.html",
   "license": "MIT",
   "private": true,
