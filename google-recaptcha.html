@@ -1,16 +1,25 @@
 <link rel="import" href="../polymer/polymer-element.html">
 
+<script src="../lodash/lodash.js"></script>
 <script src="../mixwith/mixwith.js"></script>
 
 <link rel="import" href="../iron-behavior-mixins/iron-resizable-behavior.html">
 
 <dom-module id="google-recaptcha">
     <template>
-
+        <div id="placeholder"></div>
     </template>
 </dom-module>
 
 <script>
+    const RECAPTCHA_URL = 'https://www.google.com/recaptcha/api.js';
+
+    if (!window.recaptcha_api_loaded) {
+        window.recaptcha_api_loaded = function() {
+            document.dispatchEvent(new CustomEvent('recaptcha-api-loaded'));
+        }
+    }
+
     class GoogleReCAPTCHA extends mixwith.mix(Polymer.Element).with(IronBehaviors.IronResizableBehavior) {
         static get is() {
             return 'google-recaptcha';
@@ -18,38 +27,244 @@
         static get config() {
             return {
                 properties: {
-                    lang: String,
+                    lang: {
+                        type: String,
+                        value: '',
+                        observer: '_langChanged'
+                    },
                     sitekey: String,
                     theme: {
                         type: String,
-                        value: 'light'
+                        value: 'light',
+                        observer: '_themeChanged'
                     },
                     type: {
                         type: String,
-                        value: 'image'
+                        value: 'image',
+                        observer: '_typeChanged'
                     },
                     size: {
                         type: String,
-                        value: 'normal'
+                        value: 'normal',
+                        observer: '_sizeChanged'
                     },
                     tabindex: {
                         type: Number,
                         value: 0
                     },
-                    invisible: {
-                        type: Boolean,
-                        value: false
-                    },
                     badge: {
                         type: String,
-                        value: 'bottomright'
+                        value: 'bottomright',
+                        observer: '_badgeChanged'
+                    },
+                    response: {
+                        type: String,
+                        value: '',
+                        readOnly: true,
+                        notify: true
+                    },
+                    manualRender: {
+                        type: Boolean,
+                        value: false
                     }
-                }
+                },
+                observers: ['_recaptchaParametersUpdated(sitekey, theme, size, tabindex, badge)']
             };
         }
 
         constructor() {
             super();
+
+            this._renderCaptchaDebounced = _.debounce(this.renderCaptcha, 0);
+
+            this._scriptElement = null;
+            this._captchaContainerElement = null;
+            this._captchaID = null;
+
+            document.addEventListener('recaptcha-api-loaded', this._recaptchaAPILoaded.bind(this));
+
+            this.addEventListener('iron-resize', this._documentResized.bind(this));
+        }
+
+        renderCaptcha() {
+            if (!window.grecaptcha) {
+                return;
+            }
+
+            if (!this.sitekey) {
+                console.error('Site key not specified!');
+                return;
+            }
+
+            this.removeCaptcha();
+
+            this._captchaContainerElement = document.createElement('div');
+            document.body.append(this._captchaContainerElement);
+
+            if (this.size === 'invisible') {
+                // support for invisible
+
+                this._captchaID = grecaptcha.render(this._captchaContainerElement, {
+                    sitekey: this.sitekey,
+                    badge: this.badge,
+                    type: this.type,
+                    size: 'invisible',
+                    tabindex: this.tabindex,
+                    callback: this._recaptchaResponseReceived.bind(this)
+                });
+            } else {
+                this._captchaID = grecaptcha.render(this._captchaContainerElement, {
+                    sitekey: this.sitekey,
+                    theme: this.theme,
+                    type: this.type,
+                    size: this.size,
+                    tabindex: this.tabindex,
+                    callback: this._recaptchaResponseReceived.bind(this),
+                    'expired-callback': this._recaptchaResponseExpired.bind(this)
+                });
+            }
+
+            setTimeout(this._updateWidget.bind(this), 0);
+        }
+
+        resetCaptcha() {
+            if (!window.grecaptcha) {
+                return;
+            }
+
+            if (!this._captchaID) {
+                console.error('No CAPTCHA to reset!');
+            }
+
+            grecaptcha.reset(this._captchaID);
+        }
+
+        executeCaptcha() {
+            if (!window.grecaptcha) {
+                return;
+            }
+
+            if (this.size !== 'invisible') {
+                console.error('Cannot execute non-invisible CAPTCHA!');
+                return;
+            }
+
+            grecaptcha.execute(this._captchaID);
+        }
+
+        removeCaptcha() {
+            if (this._captchaContainerElement) {
+                this._captchaContainerElement.remove();
+                this._captchaContainerElement = null;
+            }
+
+            this._captchaID = null;
+
+            this._setResponse('');
+        }
+
+        _recaptchaResponseReceived(response) {
+            this._setResponse(response);
+
+            this.dispatchEvent(new CustomEvent('recaptcha-response-received', {
+                detail: response
+            }));
+        }
+
+        _recaptchaResponseExpired() {
+            this._setResponse('');
+
+            this.dispatchEvent(new CustomEvent('recaptcha-response-expired'));
+        }
+
+        _updateWidget() {
+            if (!this._captchaContainerElement || this._captchaID === null) {
+                return;
+            }
+
+            let captchaElement = this._captchaContainerElement.firstElementChild;
+
+            this.$.placeholder.style.width = `${captchaElement.offsetWidth}px`;
+            this.$.placeholder.style.height = `${captchaElement.offsetHeight}px`;
+
+            let offsetLeft = 0;
+            let offsetTop = 0;
+
+            for (let element = this.$.placeholder; element; element = element.offsetParent) {
+                offsetLeft += element.offsetLeft;
+                offsetTop += element.offsetTop;
+            }
+
+            this._captchaContainerElement.style.position = 'absolute';
+            this._captchaContainerElement.style.left = `${offsetLeft}px`;
+            this._captchaContainerElement.style.top = `${offsetTop}px`;
+        }
+
+        _recaptchaParametersUpdated() {
+            if (!this.manualRender) {
+                this._renderCaptchaDebounced();
+            }
+        }
+
+        _recaptchaAPILoaded() {
+            if (!this.manualRender) {
+                this._renderCaptchaDebounced();
+            }
+        }
+
+        _langChanged(lang, oldLang) {
+            if (lang !== oldLang) {
+                let url = `${RECAPTCHA_URL}?onload=recaptcha_api_loaded&render=explicit`;
+
+                if (lang) {
+                    url += `&hl=${lang}`;
+                }
+
+                if (this._scriptElement) {
+                    this._scriptElement.remove();
+                    this._scriptElement = null;
+                }
+
+                this._scriptElement = document.createElement('script');
+                this._scriptElement.src = url;
+                document.body.append(this._scriptElement);
+            }
+        }
+
+        _themeChanged(theme, oldTheme) {
+            if (theme !== 'dark' && theme !== 'light') {
+                console.warn(`Improper value ${theme} for theme.`);
+
+                this.theme = oldTheme || 'light';
+            }
+        }
+
+        _typeChanged(type, oldType) {
+            if (type !== 'audio' && type !== 'image') {
+                console.warn(`Improper value ${type} for type.`);
+
+                this.type = oldType || 'image';
+            }
+        }
+
+        _sizeChanged(size, oldSize) {
+            if (size !== 'compact' && size !== 'normal' && size !== 'invisible') {
+                console.warn(`Improper value ${size} for size.`);
+
+                this.size = oldSize || 'normal';
+            }
+        }
+
+        _badgeChanged(badge, oldBadge) {
+            if (badge !== 'bottomright' && badge !== 'bottomleft' && badge !== 'inline') {
+                console.warn(`Improper value ${badge} for badge.`);
+
+                this.badge = oldBadge || 'bottomright';
+            }
+        }
+
+        _documentResized() {
+            this._updateWidget();
         }
     }
 

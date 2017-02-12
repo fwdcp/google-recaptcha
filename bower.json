@@ -18,6 +18,7 @@
   "dependencies": {
     "polymer": "Polymer/polymer#2.0-preview",
     "iron-behavior-mixins": "fwdcp/iron-behavior-mixins",
-    "mixwith": "fwdcp/mixwith"
+    "mixwith": "fwdcp/mixwith",
+    "lodash": "^4.17.4"
   }
 }
