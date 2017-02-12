@@ -132,7 +132,7 @@
                 return;
             }
 
-            if (!this._captchaID) {
+            if (this._captchaID === null) {
                 console.error('No CAPTCHA to reset!');
             }
 
