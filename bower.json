@@ -16,9 +16,8 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#2.0-preview",
-    "iron-behavior-mixins": "fwdcp/iron-behavior-mixins",
-    "mixwith": "fwdcp/mixwith",
-    "lodash": "^4.17.4"
+    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^2.0.0",
+    "lodash": "^4.17.4",
+    "polymer": "Polymer/polymer#^2.0.0"
   }
 }
