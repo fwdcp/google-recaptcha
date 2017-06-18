@@ -85,8 +85,13 @@
             this.addEventListener('iron-resize', this._documentResized.bind(this));
         }
 
+        connectedCallback() {
+            this._loadScript();
+        }
+
         renderCaptcha() {
             if (!window.grecaptcha) {
+                console.warn('ReCAPTCHA not loaded!');
                 return;
             }
 
@@ -222,20 +227,7 @@
 
         _langChanged(lang, oldLang) {
             if (lang !== oldLang) {
-                let url = `${RECAPTCHA_URL}?onload=recaptcha_api_loaded&render=explicit`;
-
-                if (lang) {
-                    url += `&hl=${lang}`;
-                }
-
-                if (this._scriptElement) {
-                    this._scriptElement.remove();
-                    this._scriptElement = null;
-                }
-
-                this._scriptElement = document.createElement('script');
-                this._scriptElement.src = url;
-                document.body.append(this._scriptElement);
+                this._loadScript();
             }
         }
 
@@ -273,6 +265,23 @@
 
         _documentResized() {
             this._updateWidget();
+        }
+
+        _loadScript() {
+            let url = `${RECAPTCHA_URL}?onload=recaptcha_api_loaded&render=explicit`;
+
+            if (this.lang) {
+                url += `&hl=${this.lang}`;
+            }
+            
+            if (this._scriptElement) {
+                this._scriptElement.remove();
+                this._scriptElement = null;
+            }
+
+            this._scriptElement = document.createElement('script');
+            this._scriptElement.src = url;
+            document.body.append(this._scriptElement);
         }
     }
 
