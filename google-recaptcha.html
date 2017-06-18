@@ -23,52 +23,54 @@
         static get is() {
             return 'google-recaptcha';
         }
-        static get config() {
+        static get properties() {
             return {
-                properties: {
-                    lang: {
-                        type: String,
-                        value: '',
-                        observer: '_langChanged'
-                    },
-                    sitekey: String,
-                    theme: {
-                        type: String,
-                        value: 'light',
-                        observer: '_themeChanged'
-                    },
-                    type: {
-                        type: String,
-                        value: 'image',
-                        observer: '_typeChanged'
-                    },
-                    size: {
-                        type: String,
-                        value: 'normal',
-                        observer: '_sizeChanged'
-                    },
-                    tabindex: {
-                        type: Number,
-                        value: 0
-                    },
-                    badge: {
-                        type: String,
-                        value: 'bottomright',
-                        observer: '_badgeChanged'
-                    },
-                    response: {
-                        type: String,
-                        value: '',
-                        readOnly: true,
-                        notify: true
-                    },
-                    manualRender: {
-                        type: Boolean,
-                        value: false
-                    }
+                lang: {
+                    type: String,
+                    value: '',
+                    observer: '_langChanged'
                 },
-                observers: ['_recaptchaParametersUpdated(sitekey, theme, size, tabindex, badge)']
+                sitekey: String,
+                theme: {
+                    type: String,
+                    value: 'light',
+                    observer: '_themeChanged'
+                },
+                type: {
+                    type: String,
+                    value: 'image',
+                    observer: '_typeChanged'
+                },
+                size: {
+                    type: String,
+                    value: 'normal',
+                    observer: '_sizeChanged'
+                },
+                tabindex: {
+                    type: Number,
+                    value: 0
+                },
+                badge: {
+                    type: String,
+                    value: 'bottomright',
+                    observer: '_badgeChanged'
+                },
+                response: {
+                    type: String,
+                    value: '',
+                    readOnly: true,
+                    notify: true
+                },
+                manualRender: {
+                    type: Boolean,
+                    value: false
+                }
             };
+        }
+        static get observers() {
+            return [
+                '_recaptchaParametersUpdated(sitekey, theme, size, tabindex, badge)'
+            ];
         }
 
         constructor() {
