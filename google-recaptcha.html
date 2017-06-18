@@ -133,6 +133,7 @@
 
         resetCaptcha() {
             if (!window.grecaptcha) {
+                console.warn('ReCAPTCHA not loaded!');
                 return;
             }
 
@@ -145,6 +146,7 @@
 
         executeCaptcha() {
             if (!window.grecaptcha) {
+                console.warn('ReCAPTCHA not loaded!');
                 return;
             }
 
