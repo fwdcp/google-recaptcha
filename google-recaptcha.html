@@ -79,6 +79,10 @@
             this._scriptElement = null;
             this._captchaContainerElement = null;
             this._captchaID = null;
+        }
+
+        ready() {
+            super.ready();
 
             document.addEventListener('recaptcha-api-loaded', this._recaptchaAPILoaded.bind(this));
 
@@ -86,7 +90,15 @@
         }
 
         connectedCallback() {
+            super.connectedCallback();
+            
             this._loadScript();
+        }
+
+        disconnectedCallback() {
+            this._unloadScript();
+            
+            super.disconnectedCallback();
         }
 
         renderCaptcha() {
@@ -275,15 +287,19 @@
             if (this.lang) {
                 url += `&hl=${this.lang}`;
             }
-            
-            if (this._scriptElement) {
-                this._scriptElement.remove();
-                this._scriptElement = null;
-            }
+
+            this._unloadScript();
 
             this._scriptElement = document.createElement('script');
             this._scriptElement.src = url;
             document.body.append(this._scriptElement);
+        }
+
+        _unloadScript() {
+            if (this._scriptElement) {
+                this._scriptElement.remove();
+                this._scriptElement = null;
+            }
         }
     }
 
